@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:label_wise/profile_selection.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:math' as math; // For scan line animation
 import 'dart:ui' as ui; // For Matrix4 transform
 
 import 'camera_scan_page.dart';
+import 'diet_pref/allergy_screen.dart';
+import 'diet_pref/ethical_choice_screen.dart';
+import 'diet_pref/medical_choice_screen.dart';
+import 'diet_pref/religion.dart';
 
 void main() {
   runApp(LabelWiseDemoApp());
@@ -21,7 +26,11 @@ class LabelWiseDemoApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(),
         scaffoldBackgroundColor: const Color(0xFF0A0E21), // Dark professional background
       ),
-      home: const LandingScreen(),
+      home:  ProfileSelectionScreen(),
+     // home:ReligionCultureSelectionScreen(),
+     // home: EthicalChoicesScreen(),
+     // home: AllergiesScreen(),
+     // home:MedicalNeedsScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

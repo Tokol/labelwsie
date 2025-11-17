@@ -44,6 +44,8 @@ dependencies:
   lottie: ^3.3.2
   image: ^4.5.4
   flutter_tesseract_ocr: ^0.4.30
+  auto_size_text: ^3.0.0
+  material_symbols_icons: ^4.2874.0
 
 
 
