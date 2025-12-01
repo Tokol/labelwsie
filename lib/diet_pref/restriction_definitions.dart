@@ -1321,6 +1321,406 @@ const Map<String, RestrictionDefinition> restrictionDefinitions = {
     icon: Symbols.icecream_rounded,
   ),
 
+  "contains_soy": RestrictionDefinition(
+    id: "contains_soy",
+    title: "Soy and soy-derived ingredients",
+    description:
+    "Flag if the ingredient list includes soy or soy-derived products. "
+        "Relevant for soy allergies, thyroid-related diets, hormonal sensitivity, "
+        "and some fitness or clean-eating preferences.",
+    examples: <String>[
+      "soy",
+      "soybean",
+      "soy flour",
+      "soy protein",
+      "soy protein isolate",
+      "soy protein concentrate",
+      "soy lecithin",
+      "soy sauce",
+      "tofu",
+      "tempeh",
+      "edamame",
+      "miso",
+    ],
+    icon: Symbols.set_meal_rounded,
+  ),
+
+  "contains_nuts_general": RestrictionDefinition(
+    id: "contains_nuts_general",
+    title: "Nuts and nut-derived ingredients",
+    description:
+    "Flag if the ingredient list includes nuts or nut-based ingredients. "
+        "Useful for nut allergies, calorie-restricted diets, and some clean-eating rules.",
+    examples: <String>[
+      "almond",
+      "walnut",
+      "cashew",
+      "hazelnut",
+      "pistachio",
+      "brazil nut",
+      "pecan",
+      "nut paste",
+      "nut butter",
+      "nut flour",
+    ],
+    icon: Symbols.nutrition_rounded, // fallback if icon missing
+  ),
+
+  "contains_seed_oils": RestrictionDefinition(
+    id: "contains_seed_oils",
+    title: "Seed oils and refined vegetable oils",
+    description:
+    "Flag if the ingredient list includes seed oils or refined vegetable oils. "
+        "Relevant for clean eating, low-inflammatory diets, and modern fitness trends "
+        "that avoid processed or high-omega-6 oils.",
+    examples: <String>[
+      "sunflower oil",
+      "sunflower seed oil",
+      "rapeseed oil",
+      "canola oil",
+      "soybean oil",
+      "corn oil",
+      "cottonseed oil",
+      "grapeseed oil",
+      "vegetable oil (unspecified)",
+    ],
+    icon: Symbols.oil_barrel_rounded,
+  ),
+
+  "contains_trans_fats": RestrictionDefinition(
+    id: "contains_trans_fats",
+    title: "Trans fats and hydrogenated oils",
+    description:
+    "Flag if the ingredient list includes trans fats or fully/partially hydrogenated oils. "
+        "These are avoided in heart-healthy, weight-loss, and clean-eating diets.",
+    examples: <String>[
+      "hydrogenated oil",
+      "partially hydrogenated oil",
+      "hydrogenated vegetable oil",
+      "shortening",
+      "margarine",
+      "trans fat",
+      "vegetable shortening",
+    ],
+    icon: Symbols.warning_rounded,
+  ),
+
+  "contains_artificial_additives_general": RestrictionDefinition(
+    id: "contains_artificial_additives_general",
+    title: "Artificial additives",
+    description:
+    "Flag if the ingredient list includes artificial additives, colorings, stabilizers, "
+        "or preservatives not aligned with whole-food or clean-eating diets.",
+    examples: <String>[
+      "preservative",
+      "stabilizer",
+      "color (E)",
+      "artificial flavor",
+      "artificial colouring",
+      "modified starch",
+      "anti-caking agent",
+      "emulsifier (E472)",
+      "E-numbers (synthetic)",
+      "artificial sweetener",
+    ],
+    icon: Symbols.science_rounded,
+  ),
+  "contains_high_carbohydrate_sources": RestrictionDefinition(
+    id: "contains_high_carbohydrate_sources",
+    title: "High-carbohydrate ingredients",
+    description:
+    "Flag if the ingredient list includes carbohydrate-dense grains, starches, flours, "
+        "or sugars that significantly increase carb load. "
+        "Useful for keto, low-carb, balanced macro, and weight-management diets.",
+    examples: <String>[
+      "wheat flour",
+      "white flour",
+      "rice flour",
+      "rice",
+      "corn",
+      "corn flour",
+      "starch",
+      "modified starch",
+      "potato",
+      "potato starch",
+      "oats",
+      "barley",
+      "maltodextrin",
+      "glucose syrup",
+      "tapioca starch",
+    ],
+    icon: Symbols.bakery_dining_rounded,
+  ),
+
+  "contains_peanuts": RestrictionDefinition(
+    id: "contains_peanuts",
+    title: "Peanuts",
+    description:
+    "Flag if the ingredient list includes peanuts or peanut-derived ingredients. "
+        "Relevant for peanut allergy, one of the most serious food allergens.",
+    examples: <String>[
+      "peanut",
+      "peanuts",
+      "groundnut",
+      "groundnut oil",
+      "peanut oil",
+      "peanut flour",
+      "peanut butter",
+      "arachis oil",
+    ],
+    icon: Symbols.nutrition_rounded,
+  ),
+  "contains_treenuts": RestrictionDefinition(
+    id: "contains_treenuts",
+    title: "Tree nuts",
+    description:
+    "Flag if the ingredient list includes tree nuts such as almond, walnut, cashew, hazelnut, pecan or pistachio.",
+    examples: <String>[
+      "almond",
+      "walnut",
+      "cashew",
+      "hazelnut",
+      "pistachio",
+      "pecan",
+      "brazil nut",
+      "macadamia",
+      "nut paste",
+      "nut flour",
+    ],
+    icon: Symbols.yard_rounded,
+  ),
+  "contains_sesame": RestrictionDefinition(
+    id: "contains_sesame",
+    title: "Sesame",
+    description:
+    "Flag if the ingredient list includes sesame seeds, tahini or sesame oil.",
+    examples: <String>[
+      "sesame",
+      "sesame seeds",
+      "tahini",
+      "sesame oil",
+      "sesamol",
+    ],
+    icon: Symbols.circle_rounded,
+  ),
+  "contains_mustard": RestrictionDefinition(
+    id: "contains_mustard",
+    title: "Mustard",
+    description:
+    "Flag if the ingredient list includes mustard seeds, mustard flour, mustard powder or mustard-based condiments.",
+    examples: <String>[
+      "mustard",
+      "mustard seeds",
+      "mustard flour",
+      "mustard powder",
+      "mustard paste",
+    ],
+    icon: Symbols.dinner_dining_rounded,
+  ),
+  "contains_sulfites": RestrictionDefinition(
+    id: "contains_sulfites",
+    title: "Sulfites",
+    description:
+    "Flag if the ingredient list includes sulfites or sulfur dioxide preservatives. "
+        "This includes E220–E228 additives.",
+    examples: <String>[
+      "sulfites",
+      "sulphites",
+      "E220",
+      "E221",
+      "E222",
+      "E223",
+      "E224",
+      "E226",
+      "E227",
+      "E228",
+    ],
+    icon: Symbols.science_rounded,
+  ),
+  "contains_celery": RestrictionDefinition(
+    id: "contains_celery",
+    title: "Celery",
+    description:
+    "Flag if the ingredient list includes celery stalks, celery seeds, celery root or celery salt.",
+    examples: <String>[
+      "celery",
+      "celery salt",
+      "celery seed",
+      "celeriac",
+    ],
+    icon: Symbols.ramen_dining_rounded,
+  ),
+  "contains_lupin": RestrictionDefinition(
+    id: "contains_lupin",
+    title: "Lupin",
+    description:
+    "Flag if the ingredient list includes lupin flour, lupin seeds or lupin protein. "
+        "Common in gluten-free baked products.",
+    examples: <String>[
+      "lupin",
+      "lupin flour",
+      "lupin protein",
+      "lupin seeds",
+    ],
+    icon: Symbols.local_florist_rounded,
+  ),
+  "contains_molluscs": RestrictionDefinition(
+    id: "contains_molluscs",
+    title: "Molluscs",
+    description:
+    "Flag if the ingredient list includes clams, mussels, squid, octopus or mollusc extracts.",
+    examples: <String>[
+      "mussels",
+      "clams",
+      "squid",
+      "octopus",
+    ],
+    icon: Symbols.directions_boat_filled_rounded,
+  ),
+  "contains_corn": RestrictionDefinition(
+    id: "contains_corn",
+    title: "Corn / Maize",
+    description:
+    "Flag if the ingredient list includes corn, maize or corn-derived sweeteners and starches.",
+    examples: <String>[
+      "corn",
+      "maize",
+      "corn starch",
+      "maize starch",
+      "maltodextrin",
+      "dextrose",
+      "corn syrup",
+    ],
+    icon: Symbols.grass_rounded,
+  ),
+  "contains_mango": RestrictionDefinition(
+    id: "contains_mango",
+    title: "Mango",
+    description:
+    "Flag if the ingredient list includes mango or mango-derived flavorings. "
+        "Useful for fruit allergies.",
+    examples: <String>[
+      "mango",
+      "mango pulp",
+      "mango purée",
+      "mango flavor",
+      "dried mango",
+    ],
+    icon: Symbols.restaurant_rounded,
+  ),
+
+
+//ethical added here
+
+  "contains_sugar": RestrictionDefinition(
+    id: "contains_sugar",
+    title: "Sugars (general)",
+    description: "Flag if the ingredient list includes any sugar source including refined sugar, cane sugar, glucose, fructose, or sweet syrups.",
+    examples: [
+      "sugar",
+      "sucrose",
+      "glucose",
+      "fructose",
+      "cane sugar",
+      "raw sugar",
+      "invert sugar",
+      "corn syrup",
+      "glucose syrup",
+      "brown sugar",
+    ],
+    icon: Symbols.cake_rounded,
+  ),
+
+
+  "contains_wheat": RestrictionDefinition(
+    id: "contains_wheat",
+    title: "Wheat",
+    description: "Flag if wheat or wheat-derived ingredients are present.",
+    examples: [
+      "wheat",
+      "wheat flour",
+      "whole wheat",
+      "wheat protein",
+      "vital wheat gluten",
+    ],
+    icon: Symbols.grain_rounded,
+  ),
+  "contains_grains_general": RestrictionDefinition(
+    id: "contains_grains_general",
+    title: "Grains",
+    description: "Flag grain ingredients such as wheat, barley, rye, oats, rice, corn, and grain-based flours.",
+    examples: [
+      "wheat",
+      "barley",
+      "rye",
+      "oats",
+      "rice",
+      "corn",
+      "maize",
+      "semolina",
+      "spelt",
+    ],
+    icon: Symbols.grain_rounded,
+  ),
+  "contains_starch": RestrictionDefinition(
+    id: "contains_starch",
+    title: "Starch",
+    description: "Flag starches such as corn starch, potato starch, tapioca starch and modified starches.",
+    examples: [
+      "starch",
+      "potato starch",
+      "corn starch",
+      "tapioca starch",
+      "modified starch",
+    ],
+    icon: Symbols.bakery_dining_rounded,
+  ),
+  "contains_preservatives_general": RestrictionDefinition(
+    id: "contains_preservatives_general",
+    title: "Preservatives",
+    description: "Flag if the ingredient list includes preservatives such as benzoates, sorbates, nitrates, or E-number preservatives.",
+    examples: [
+      "preservative",
+      "sodium benzoate",
+      "potassium sorbate",
+      "calcium propionate",
+      "nitrates",
+      "nitrites",
+      "E200",
+      "E202",
+    ],
+    icon: Symbols.science_rounded,
+  ),
+  "contains_high_fat": RestrictionDefinition(
+    id: "contains_high_fat",
+    title: "High-fat ingredients",
+    description: "Flag butter, oils, cream, cheese, and other high-fat sources.",
+    examples: [
+      "butter",
+      "cream",
+      "vegetable oil",
+      "cheese",
+      "fat",
+      "lard",
+      "tallow",
+    ],
+    icon: Symbols.oil_barrel_rounded,
+  ),
+  "contains_high_calorie_density": RestrictionDefinition(
+    id: "contains_high_calorie_density",
+    title: "High-calorie ingredients",
+    description: "Flag calorie-dense ingredients such as oils, sugars, nuts, and high-carb fillers.",
+    examples: [
+      "sugar",
+      "oil",
+      "corn syrup",
+      "nut butter",
+      "cream",
+      "maltodextrin",
+    ],
+    icon: Symbols.local_fire_department_rounded,
+  ),
+
 
 
 };

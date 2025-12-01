@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:hive_ce/hive.dart';
+import 'package:http/http.dart' as box;
 import 'package:material_symbols_icons/symbols.dart';
 
 class ProfileSelectionScreen extends StatefulWidget {
@@ -43,10 +45,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
         title: const Text(
           "LabelWise",
           style: TextStyle(
@@ -114,17 +113,29 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // handle skip vs continue
+                  onPressed: () async {
                     final hasSelection = selected.containsValue(true);
+                    final box = await Hive.openBox("app_data");
 
                     if (!hasSelection) {
-                      // user chose to skip
-                      // Navigate without saving
-                    //  Navigator.pushReplacementNamed(context, "/home");
-                    } else {
-                      // save + continue
-                     // Navigator.pushReplacementNamed(context, "/home");
+                      // User skipped everything
+                     // await box.put("hasSetPreferences", true);
+
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        "/home",
+                            (route) => false,
+                      );
+                      return;
+                    }
+
+                    else {
+                      // User selected categories → go to dynamic wizard
+                      Navigator.pushReplacementNamed(
+                        context,
+                        "/preferencesWizard",
+                        arguments: selected,
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(

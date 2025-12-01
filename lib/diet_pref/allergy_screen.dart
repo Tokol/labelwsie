@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:label_wise/diet_pref/restriction_definitions.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class AllergenOption {
@@ -7,14 +8,16 @@ class AllergenOption {
   final String title;
   final String subtitle;
   final IconData icon;
-  final List<String> examples; // for bottom sheet only
+
+  /// ID in restrictionDefinitions
+  final String restrictionId;
 
   const AllergenOption({
     required this.id,
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.examples,
+    required this.restrictionId,
   });
 }
 
@@ -25,116 +28,115 @@ const List<AllergenOption> kAllergens = [
     title: 'Dairy',
     subtitle: 'Milk, whey, lactose',
     icon: Symbols.local_drink_rounded,
-    examples: ['milk', 'whey', 'lactose', 'casein', 'butterfat'],
+    restrictionId: 'contains_dairy',
   ),
   AllergenOption(
     id: 'eggs',
     title: 'Eggs',
     subtitle: 'Egg whites, albumin',
     icon: Symbols.egg_alt_rounded,
-    examples: ['egg white', 'egg yolk', 'albumin'],
+    restrictionId: 'contains_eggs',
   ),
   AllergenOption(
     id: 'peanut',
     title: 'Peanuts',
     subtitle: 'Peanut flour, oil',
     icon: Symbols.nutrition_rounded,
-    examples: ['peanuts', 'groundnuts', 'peanut oil'],
+    restrictionId: 'contains_peanuts',
   ),
   AllergenOption(
     id: 'tree_nuts',
     title: 'Tree Nuts',
     subtitle: 'Almond, cashew, walnut',
     icon: Symbols.yard_rounded,
-    examples: ['almond', 'hazelnut', 'walnut', 'cashew'],
+    restrictionId: 'contains_treenuts',
   ),
   AllergenOption(
     id: 'gluten',
     title: 'Gluten',
     subtitle: 'Gluten grains',
     icon: Symbols.grain_rounded,
-    examples: ['wheat', 'barley', 'rye', 'malt'],
+    restrictionId: 'contains_gluten',
   ),
   AllergenOption(
     id: 'soy',
     title: 'Soy',
     subtitle: 'Soy protein, lecithin',
     icon: Symbols.eco_rounded,
-    examples: ['soy', 'soya', 'soy protein', 'soy lecithin'],
+    restrictionId: 'contains_soy',
   ),
   AllergenOption(
     id: 'fish',
     title: 'Fish',
     subtitle: 'All fish species',
     icon: Symbols.set_meal_rounded,
-    examples: ['fish', 'salmon', 'tuna', 'cod'],
+    restrictionId: 'contains_fish_or_seafood',
   ),
   AllergenOption(
     id: 'shellfish',
     title: 'Shellfish',
     subtitle: 'Shrimp, crab, etc.',
     icon: Symbols.kayaking_rounded,
-    examples: ['shrimp', 'prawn', 'crab', 'lobster'],
+    restrictionId: 'contains_shellfish_crustaceans',
   ),
   AllergenOption(
     id: 'sesame',
     title: 'Sesame',
     subtitle: 'Seeds & oils',
     icon: Symbols.circle_rounded,
-    examples: ['sesame seeds', 'tahini', 'sesame oil'],
+    restrictionId: 'contains_sesame',
   ),
   AllergenOption(
     id: 'mustard',
     title: 'Mustard',
     subtitle: 'Seeds, powder, paste',
     icon: Symbols.dinner_dining_rounded,
-    examples: ['mustard', 'mustard flour', 'mustard seeds'],
+    restrictionId: 'contains_mustard',
   ),
   AllergenOption(
     id: 'sulfites',
     title: 'Sulfites',
     subtitle: 'E220–E228',
     icon: Symbols.science_rounded,
-    examples: ['sulfites', 'E220', 'E221', 'E222'],
+    restrictionId: 'contains_sulfites',
   ),
   AllergenOption(
     id: 'celery',
     title: 'Celery',
     subtitle: 'Stalk, root, seeds',
     icon: Symbols.ramen_dining_rounded,
-    examples: ['celery', 'celery salt', 'celery seed'],
+    restrictionId: 'contains_celery',
   ),
   AllergenOption(
     id: 'lupin',
     title: 'Lupin',
     subtitle: 'Bakery flour & protein',
     icon: Symbols.local_florist_rounded,
-    examples: ['lupin flour', 'lupin protein', 'lupin seeds'],
+    restrictionId: 'contains_lupin',
   ),
   AllergenOption(
     id: 'molluscs',
     title: 'Molluscs',
     subtitle: 'Clams, mussels, squid',
     icon: Symbols.directions_boat_filled_rounded,
-    examples: ['mussels', 'clams', 'squid', 'octopus'],
+    restrictionId: 'contains_molluscs',
   ),
   AllergenOption(
     id: 'corn',
     title: 'Corn / Maize',
     subtitle: 'Starch & sweeteners',
     icon: Symbols.grass_rounded,
-    examples: ['corn starch', 'maize', 'maltodextrin', 'dextrose', 'corn syrup'],
+    restrictionId: 'contains_corn',
   ),
   AllergenOption(
     id: 'mango',
     title: 'Mango',
     subtitle: 'Fruit allergy (rare)',
     icon: Symbols.restaurant_rounded,
-    examples: ['mango pulp', 'mango flavor', 'dried mango'],
+    restrictionId: 'contains_mango',
   ),
-
-
 ];
+
 
 // Simple list for sensitivities
 const List<String> kSensitivityOptions = [
@@ -533,6 +535,9 @@ class _AllergiesScreenState extends State<AllergiesScreen> {
 
 
   void _showAllergenDetails(AllergenOption allergen) {
+    final rule = restrictionDefinitions[allergen.restrictionId];
+    final examples = rule?.examples ?? [];
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -548,6 +553,7 @@ class _AllergiesScreenState extends State<AllergiesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ------------ HEADER -------------
                 Row(
                   children: [
                     Container(
@@ -569,12 +575,15 @@ class _AllergiesScreenState extends State<AllergiesScreen> {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
+                          color: Color(0xFF1A1A1A),
                         ),
                       ),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 8),
+
                 Text(
                   allergen.subtitle,
                   style: const TextStyle(
@@ -582,20 +591,47 @@ class _AllergiesScreenState extends State<AllergiesScreen> {
                     color: Color(0xFF666666),
                   ),
                 ),
-                const SizedBox(height: 18),
+
+                const SizedBox(height: 22),
+
+                // ------------ DESCRIPTION (optional) -------------
+                if (rule != null) ...[
+                  Text(
+                    rule.title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    rule.description,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF555555),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // ------------ EXAMPLES -------------
                 const Text(
-                  'These are common ways this allergen appears on labels:',
+                  'Common label appearances:',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: Color(0xFF444444),
                   ),
                 ),
-                const SizedBox(height: 14),
+
+                const SizedBox(height: 12),
+
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: allergen.examples.map((ex) {
+                  children: examples.map((ex) {
                     return Chip(
                       backgroundColor: const Color(0xFFEFF7F1),
                       label: Text(
@@ -611,6 +647,7 @@ class _AllergiesScreenState extends State<AllergiesScreen> {
                     );
                   }).toList(),
                 ),
+
                 const SizedBox(height: 40),
               ],
             ),
@@ -619,6 +656,7 @@ class _AllergiesScreenState extends State<AllergiesScreen> {
       },
     );
   }
+
 
   void _addCustomAllergen() {
     final text = _customController.text.trim();
@@ -631,6 +669,61 @@ class _AllergiesScreenState extends State<AllergiesScreen> {
     }
     _customController.clear();
     HapticFeedback.selectionClick();
+  }
+  void _showAllExamplesBottomSheet(String title, List<String> examples) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return FractionallySizedBox(
+          heightFactor: 0.75,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "$title – Full List",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: examples.map((ex) {
+                        return Chip(
+                          backgroundColor: const Color(0xFFEFF7F1),
+                          label: Text(
+                            ex,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF2E7D32),
+                            ),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
 
