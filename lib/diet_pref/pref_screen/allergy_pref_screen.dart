@@ -168,15 +168,25 @@ const List<String> kSensitivityOptions = [
 // PRE-ALLERGY SCREEN (for wizard)
 // -------------------------------------------------------------
 class PreAllergiesScreen extends StatefulWidget {
+
+  final Set<String>? initialAllergens;
+  final Set<String>? initialSensitivities;
+  final List<String>? initialCustom;
+
   final Function({
   required Set<String> allergens,
   required Set<String> sensitivities,
   required List<String> custom,
+
+
   }) onChanged;
 
   const PreAllergiesScreen({
     super.key,
     required this.onChanged,
+    this.initialAllergens,
+    this.initialSensitivities,
+    this.initialCustom,
   });
 
   @override
@@ -189,6 +199,28 @@ class _PreAllergiesScreenState extends State<PreAllergiesScreen> {
   final List<String> _customAllergens = [];
 
   final TextEditingController _customController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.initialAllergens != null) {
+      _selectedAllergenIds.addAll(widget.initialAllergens!);
+    }
+    if (widget.initialSensitivities != null) {
+      _selectedSensitivities.addAll(widget.initialSensitivities!);
+    }
+    if (widget.initialCustom != null) {
+      _customAllergens.addAll(widget.initialCustom!);
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _triggerCallback(); // so NEXT button activates automatically
+    });
+  }
+
+
+
 
   @override
   void dispose() {

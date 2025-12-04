@@ -9,10 +9,13 @@ import 'helper/ehical_choices.dart';
 
 class EthicalChoicesScreen extends StatefulWidget {
   final Function(Set<String>) onChanged;
+  final Set<String>? initialSelectedIds;
+
 
   const EthicalChoicesScreen({
     super.key,
     required this.onChanged,
+    this.initialSelectedIds,
   });
 
   @override
@@ -24,13 +27,22 @@ class _EthicalChoicesScreenState extends State<EthicalChoicesScreen> {
 
    List<EthicalChoice> _choices = choices;
 
+
   @override
   void initState() {
     super.initState();
+
+    if (widget.initialSelectedIds != null) {
+      _selectedIds.addAll(widget.initialSelectedIds!);
+    }
+
+    // notify wizard of initial state
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.onChanged(_selectedIds); // initially empty → disables Next
+      widget.onChanged(_selectedIds);
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {

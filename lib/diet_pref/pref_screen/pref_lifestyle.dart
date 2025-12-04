@@ -135,10 +135,12 @@ const List<LifestyleGoal> kLifestyleGoals = [
 // ---------------------------------------------------------------------------
 class PrefLifestyleScreen extends StatefulWidget {
   final void Function(List<Map<String, dynamic>>) onChanged;
+  final Set<String>? initialSelectedIds;
 
   const PrefLifestyleScreen({
     super.key,
     required this.onChanged,
+    this.initialSelectedIds,
   });
 
   @override
@@ -147,6 +149,8 @@ class PrefLifestyleScreen extends StatefulWidget {
 
 class _PrefLifestyleScreenState extends State<PrefLifestyleScreen> {
   final Set<String> _selectedGoalIds = {};
+
+
 
   List<Map<String, dynamic>> _buildSelectedGoalsJson() {
     return _selectedGoalIds.map((goalId) {
@@ -157,6 +161,7 @@ class _PrefLifestyleScreenState extends State<PrefLifestyleScreen> {
         'subtitle': goal.subtitle,
         'type': goal.type.toString().split('.').last,
         'restrictions': goal.restrictionIds,
+        'scoringProfile': goal.scoringProfile,
       };
     }).toList();
   }
@@ -166,6 +171,23 @@ class _PrefLifestyleScreenState extends State<PrefLifestyleScreen> {
     if (width < 700) return 3;
     return 4;
   }
+
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.initialSelectedIds != null) {
+      _selectedGoalIds.addAll(widget.initialSelectedIds!);
+    }
+
+    // notify wizard that page is valid
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onChanged(_buildSelectedGoalsJson());
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {

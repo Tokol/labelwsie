@@ -80,10 +80,13 @@ class PrefMedicalScreen extends StatefulWidget {
   required Set<String> conditions,
   required Map<String, Map<String, bool>> restrictions,
   }) onChanged;
-
+  final Set<String>? initialSelectedConditions;
+  final Map<String, Map<String, bool>>? initialRestrictions;
   const PrefMedicalScreen({
     super.key,
     required this.onChanged,
+    this.initialSelectedConditions,
+    this.initialRestrictions,
   });
 
   @override
@@ -94,9 +97,20 @@ class _PrefMedicalScreenState extends State<PrefMedicalScreen> {
   final Set<String> _selectedConditions = {};
   final Map<String, Map<String, bool>> _selectedRestrictions = {};
 
+
   @override
   void initState() {
     super.initState();
+
+    if (widget.initialSelectedConditions != null) {
+      _selectedConditions.addAll(widget.initialSelectedConditions!);
+    }
+
+    if (widget.initialRestrictions != null) {
+      _selectedRestrictions.addAll(widget.initialRestrictions!);
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _notifyWizard());
   }
 
 

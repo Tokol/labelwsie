@@ -8,12 +8,15 @@ class ReligionStrictnessPage extends StatefulWidget {
   final String Function() getReligion;
   final Function(String) onSelected;
   final Function(bool) onStateChanged;
+  final String? initialStrictness;
+
 
   const ReligionStrictnessPage({
     super.key,
     required this.getReligion,
     required this.onSelected,
     required this.onStateChanged,
+    this.initialStrictness,
   });
 
   @override
@@ -37,6 +40,17 @@ class _ReligionStrictnessPageState extends State<ReligionStrictnessPage> {
 
     // Load strictness list dynamically
     _levels = loadStrictness(widget.getReligion());
+
+    _selected = widget.initialStrictness;
+    _expanded = widget.initialStrictness;
+
+    if (_selected != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onSelected(_selected!);
+        widget.onStateChanged(true);
+      });
+    }
+
   }
 
   @override

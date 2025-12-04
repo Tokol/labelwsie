@@ -6,11 +6,14 @@ import '../religion.dart';
 class ReligionSelectionPage extends StatefulWidget {
   final Function(String) onSelected;
   final Function(bool) onStateChanged;
+  final String? initialSelectedReligion;
+
 
   const ReligionSelectionPage({
     super.key,
     required this.onSelected,
     required this.onStateChanged,
+    this.initialSelectedReligion,
   });
 
   @override
@@ -19,6 +22,22 @@ class ReligionSelectionPage extends StatefulWidget {
 
 class _ReligionSelectionPageState extends State<ReligionSelectionPage> {
   String? _selected;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Pre-select religion if editing
+    _selected = widget.initialSelectedReligion;
+
+    if (_selected != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onSelected(_selected!);
+        widget.onStateChanged(true);
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
