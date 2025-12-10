@@ -65,6 +65,8 @@ class ProfilePage extends StatelessWidget {
   // ───────────────────────────────────────────────
 
   Widget _buildReligion(BuildContext context, Map? data) {
+    print("religion");
+    print(data);
     if (data == null) {
       return _prefCard(
         context,
