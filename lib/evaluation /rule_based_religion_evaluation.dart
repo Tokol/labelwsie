@@ -29,11 +29,16 @@ class RuleBasedReligionEval {
         if (restriction == null) continue;
 
         for (final keyword in restriction.examples) {
-          if (valueLower.contains(keyword.toLowerCase())) {
+          final pattern = RegExp(
+              r'(^|\W)' + RegExp.escape(keyword.toLowerCase()) + r'(\W|$)'
+          );
+
+          if (pattern.hasMatch(valueLower)) {
             triggeredRules.add(ruleId);
             violatedRuleIds.add(ruleId);
             break;
           }
+
         }
       }
 

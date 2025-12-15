@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../evaluation /orchestrator/religion_evaluation.dart';
 import '../evaluation /reason_based_religion_evaluation.dart';
 import '../evaluation /rule_based_religion_evaluation.dart';
 import '../state/pref_store.dart';
@@ -80,7 +81,7 @@ class _TestScreenState extends State<TestScreen> {
 
       final ingredients = await extractIngredients(product);
       final additives =  extractAdditives(product);
-
+     // final additives = ["sungur", "swine"];
 
       if (ingredients == null || ingredients.isEmpty) {
         setState(() {
@@ -114,29 +115,18 @@ ${jsonEncode(religionPref)}
         _running = false;
       });
 
-  dynamic  res =    RuleBasedReligionEval(
+      final evaluation = ReligionEvaluation(
         religionRule: religionPref,
         ingredients: ingredients,
         additives: additives,
       );
 
-     print(res.result());
-
-      final evaluator = ReasonBasedReligionEval(
-        religionRule: religionPref,
-        ingredients: ingredients,
-        additives: additives,
-      );
-
-      final Map<String, dynamic> result = await evaluator.result(); // ✅ await
-
-      final pretty = const JsonEncoder.withIndent("  ").convert(result);
+      final result = await evaluation.evaluate();
 
       setState(() {
-        _log = const JsonEncoder.withIndent("  ").convert(res.result());
-
-        //_log = pretty; // ✅ string
+        _log = const JsonEncoder.withIndent("  ").convert(result);
       });
+
 
 
 

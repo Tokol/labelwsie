@@ -6,7 +6,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:label_wise/result_screen.dart';
 
 import '../ai/services.dart';
-import '../evaluation /religion_rule_evluator.dart';
+
 import '../state/pref_store.dart';
 import '../utlis/open_food_service.dart';
 import 'package:provider/provider.dart';
@@ -124,12 +124,7 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
     final List<String> activeRuleIds =
         (userReligionPref?["rules"] as List?)?.cast<String>() ?? [];
 
-    final ruleResult = ReligionRuleEvaluator.evaluate(
-      ingredients: ingredients,
-      activeRuleIds: activeRuleIds,
-    );
 
-    print(ruleResult);
 
 
 // Allow scanning again AFTER returning from result page

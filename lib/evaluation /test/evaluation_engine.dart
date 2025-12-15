@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:label_wise/evaluation%20/religion_evluator.dart';
+import 'package:label_wise/evaluation%20/test/religion_evluator.dart';
 
 typedef EvalBlock = Map<String, dynamic>;
 

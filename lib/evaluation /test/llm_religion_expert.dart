@@ -1,5 +1,5 @@
 import 'dart:convert';
-import '../ai/services.dart';
+import '../../ai/services.dart';
 
 class LLMReligionExpert {
   static Future<Map<String, dynamic>> analyze({

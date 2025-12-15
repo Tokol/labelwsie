@@ -1,6 +1,6 @@
 // lib/eval/religion_evaluator.dart
 
-import '../diet_pref/restriction_definitions.dart';
+import '../../diet_pref/restriction_definitions.dart';
 
 typedef EvalBlock = Map<String, dynamic>;
 

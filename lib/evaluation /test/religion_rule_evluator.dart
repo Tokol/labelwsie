@@ -1,5 +1,6 @@
 
-import '../diet_pref/restriction_definitions.dart';
+
+import '../../diet_pref/restriction_definitions.dart';
 
 class ReligionRuleEvaluatorResult {
   final bool hasViolation;
