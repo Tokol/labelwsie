@@ -21,6 +21,11 @@ class OpenFoodFactsService {
       final json = jsonDecode(res.body);
 
       if (json["status"] == 1) {
+
+        print("result:");
+        print(jsonEncode(json));
+
+
         return json["product"];
       }
 

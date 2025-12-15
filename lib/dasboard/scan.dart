@@ -6,7 +6,10 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:label_wise/result_screen.dart';
 
 import '../ai/services.dart';
+import '../evaluation /religion_rule_evluator.dart';
+import '../state/pref_store.dart';
 import '../utlis/open_food_service.dart';
+import 'package:provider/provider.dart';
 
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key});
@@ -23,11 +26,16 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
 
   bool _hasScanned = false;
 
+
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
   }
+
+
 
   @override
   void dispose() {
@@ -35,6 +43,13 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
     controller.dispose();
     super.dispose();
   }
+
+
+  void log(String msg) {
+    debugPrint("🟢 [APP] $msg");
+  }
+
+
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -95,6 +110,27 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
     }
 
     data["ingredients_final"] = ingredients;
+
+    final store = context.read<PreferenceStore>();
+    final prefs = store.prefs;
+
+// religion pref map
+    final userReligionPref = prefs["religion"];
+    print("religion");
+    print(userReligionPref);
+
+
+// Safety: if no religion set → skip
+    final List<String> activeRuleIds =
+        (userReligionPref?["rules"] as List?)?.cast<String>() ?? [];
+
+    final ruleResult = ReligionRuleEvaluator.evaluate(
+      ingredients: ingredients,
+      activeRuleIds: activeRuleIds,
+    );
+
+    print(ruleResult);
+
 
 // Allow scanning again AFTER returning from result page
     Navigator.push(

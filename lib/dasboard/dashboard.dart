@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:label_wise/dasboard/profile.dart';
 import 'package:label_wise/dasboard/scan.dart';
+import 'package:label_wise/dasboard/testscan.dart';
 import 'package:lottie/lottie.dart';
 import 'package:not_static_icons/not_static_icons.dart';
 
@@ -18,7 +19,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _pages = const [
     HomePage(),
-    ScanPage(),
+    //ScanPage(),
+    TestScreen(),
     ProfilePage(),
   ];
 
