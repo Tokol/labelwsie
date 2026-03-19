@@ -10,6 +10,15 @@ class OpenAIService {
   static const String _baseUrl = "https://api.openai.com/v1/chat/completions";
   static const String _model = "gpt-4o-mini";
 
+  String get _apiKey {
+    if (openAiApiKey.isEmpty) {
+      throw StateError(
+        "Missing OPEN_AI_KEY. Launch the app with --dart-define=OPEN_AI_KEY=your_key.",
+      );
+    }
+    return openAiApiKey;
+  }
+
   /// -----------------------------------------------------------
   /// MAIN CALL
   /// -----------------------------------------------------------
@@ -19,7 +28,7 @@ class OpenAIService {
         Uri.parse(_baseUrl),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer $OPEN_AI_KEY",
+          "Authorization": "Bearer $_apiKey",
         },
         body: jsonEncode({
           "model": _model,
@@ -40,6 +49,54 @@ class OpenAIService {
       return content.trim();
     } catch (e) {
       print("OpenAIService error: $e");
+      return "";
+    }
+  }
+
+  Future<String> callImageModel({
+    required String prompt,
+    required String imageDataUrl,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $_apiKey",
+        },
+        body: jsonEncode({
+          "model": _model,
+          "response_format": {"type": "text"},
+          "messages": [
+            {
+              "role": "user",
+              "content": [
+                {
+                  "type": "text",
+                  "text": prompt,
+                },
+                {
+                  "type": "image_url",
+                  "image_url": {
+                    "url": imageDataUrl,
+                  },
+                },
+              ],
+            },
+          ],
+        }),
+      );
+
+      if (res.statusCode != 200) {
+        print("OpenAI image error ${res.statusCode}: ${res.body}");
+        return "";
+      }
+
+      final decoded = jsonDecode(res.body);
+      final content = decoded["choices"][0]["message"]["content"] ?? "";
+      return content.toString().trim();
+    } catch (e) {
+      print("OpenAIService image error: $e");
       return "";
     }
   }

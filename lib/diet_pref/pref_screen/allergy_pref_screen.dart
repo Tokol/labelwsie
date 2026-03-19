@@ -538,7 +538,6 @@ class _PreAllergiesScreenState extends State<PreAllergiesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Row(
                   children: [
                     Container(
@@ -564,12 +563,14 @@ class _PreAllergiesScreenState extends State<PreAllergiesScreen> {
                 ),
 
                 const SizedBox(height: 16),
+
                 Text(
                   allergen.subtitle,
                   style: const TextStyle(color: Colors.grey),
                 ),
 
                 const SizedBox(height: 16),
+
                 const Text(
                   "Common label appearances:",
                   style: TextStyle(
@@ -577,6 +578,7 @@ class _PreAllergiesScreenState extends State<PreAllergiesScreen> {
                     fontSize: 14,
                   ),
                 ),
+
                 const SizedBox(height: 10),
 
                 Wrap(
@@ -584,8 +586,17 @@ class _PreAllergiesScreenState extends State<PreAllergiesScreen> {
                   runSpacing: 8,
                   children: examples.map((e) {
                     return Chip(
-                      label: Text(e),
-                      backgroundColor: const Color(0xFFEFF7F1),
+                      label: Text(
+                        e,
+                        style: const TextStyle(
+                          color: Color(0xFF7A1F1F),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      backgroundColor: const Color(0xFFFDECEC),
+                      side: const BorderSide(
+                        color: Color(0xFFF5B5B5),
+                      ),
                     );
                   }).toList(),
                 ),
@@ -598,6 +609,7 @@ class _PreAllergiesScreenState extends State<PreAllergiesScreen> {
       },
     );
   }
+
 
   // --------------------------------------------------------------------------
   // Add custom

@@ -1,1 +1,1 @@
-const String OPEN_AI_KEY="";
+const String openAiApiKey = String.fromEnvironment("OPEN_AI_KEY");

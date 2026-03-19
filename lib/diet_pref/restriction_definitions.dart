@@ -89,7 +89,6 @@ const Map<String, RestrictionDefinition> restrictionDefinitions = {
       "bovine",
       "bovine gelatin",
       "bovine extract",
-      "cow",
       "cow meat",
       "cow fat",
       "ox",
@@ -110,6 +109,43 @@ const Map<String, RestrictionDefinition> restrictionDefinitions = {
     ],
     icon: Symbols.restaurant_menu_rounded,
   ),
+
+
+  "contains_beef_meat": RestrictionDefinition(
+    id: "contains_beef_meat",
+    title: "Beef ingredients",
+    description:
+    "Flag if the ingredient list includes beef, cow meat or beef-derived ingredients. "
+        "This includes beef fat, extracts and bovine terms. "
+        "Use this when beef is not allowed for cultural or religious reasons.",
+    examples: <String>[
+      "beef",
+      "beef fat",
+      "beef extract",
+      "bovine",
+      "bovine gelatin",
+      "bovine extract",
+      "cow meat",
+      "cow fat",
+      "ox",
+      "ox meat",
+      "ox fat",
+      "beef stock",
+      "beef bouillon",
+      "tallow",
+      "jerky",
+      "bovino",
+      "beef tallow",
+      "bovine collagen",
+      "suet",
+      "bouillon de boeuf",
+      "extract de boeuf",
+      "köttbuljong",
+      "naudanlihaliemi"
+    ],
+    icon: Symbols.restaurant_menu_rounded,
+  ),
+
 
   "contains_meat_general": RestrictionDefinition(
     id: "contains_meat_general",

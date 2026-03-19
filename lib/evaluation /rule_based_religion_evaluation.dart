@@ -12,75 +12,135 @@ class RuleBasedReligionEval {
   });
 
   Map<String, dynamic> result() {
-    final Map<String, Map<String, dynamic>> ingredientResults = {};
-    final Set<String> violatedRuleIds = {};
+    final String religionId =
+    (religionRule["id"] ?? "unknown").toString();
+    final String strictness =
+    (religionRule["strictness"] ?? "standard").toString();
 
-    final String religionId = religionRule["id"];
-    final String strictness = religionRule["strictness"];
-    final List<dynamic> rules =
-        (religionRule["rules"] as List?) ?? [];
+    final List<String> ruleIds =
+    ((religionRule["rules"] as List?) ?? []).cast<String>();
 
-    void evaluateItem(String value, String source) {
-      final valueLower = value.toLowerCase();
-      final List<String> triggeredRules = [];
+    final Map<String, dynamic> ingredientFindings = {};
+    final Map<String, dynamic> additiveFindings = {};
 
-      for (final ruleId in rules) {
-        final restriction = restrictionDefinitions[ruleId];
-        if (restriction == null) continue;
+    bool hasViolation = false;
 
-        for (final keyword in restriction.examples) {
-          final pattern = RegExp(
-              r'(^|\W)' + RegExp.escape(keyword.toLowerCase()) + r'(\W|$)'
-          );
+    // --------------------------------------------------
+    // INGREDIENT CHECK (DATA-DRIVEN)
+    // --------------------------------------------------
+    for (final ingredient in ingredients) {
+      final String text = ingredient.toLowerCase();
+      final List<String> violated = [];
 
-          if (pattern.hasMatch(valueLower)) {
-            triggeredRules.add(ruleId);
-            violatedRuleIds.add(ruleId);
+      for (final ruleId in ruleIds) {
+        final def = restrictionDefinitions[ruleId];
+        if (def == null) continue;
+
+        for (final example in def.examples) {
+
+          if (matchesExample(text, example)) {
+            violated.add(ruleId);
             break;
           }
 
         }
       }
 
-      if (triggeredRules.isNotEmpty) {
-        ingredientResults[value] = {
-          "source": source, // 👈 ingredient | additive
-          "violates": triggeredRules,
+      if (violated.isNotEmpty) {
+        hasViolation = true;
+        ingredientFindings[ingredient] = {
+          "source": "ingredient",
+          "detected_by": "keyword",
+          "violates": violated,
+          "uncertain": []
         };
       }
     }
 
-    // 1️⃣ Ingredients
-    for (final ingredient in ingredients) {
-      evaluateItem(ingredient, "ingredient");
-    }
-
-    // 2️⃣ Additives
+    // --------------------------------------------------
+    // ADDITIVE CHECK (SAME LOGIC)
+    // --------------------------------------------------
     for (final additive in additives) {
-      evaluateItem(additive, "additive");
+      final String text = additive.toLowerCase();
+      final List<String> violated = [];
+
+      for (final ruleId in ruleIds) {
+        final def = restrictionDefinitions[ruleId];
+        if (def == null) continue;
+
+        for (final example in def.examples) {
+
+          if (matchesExample(text, example)) {
+            violated.add(ruleId);
+            break;
+          }
+
+        }
+      }
+
+      if (violated.isNotEmpty) {
+        hasViolation = true;
+        additiveFindings[additive] = {
+          "source": "additive",
+          "detected_by": "keyword",
+          "violates": violated,
+          "uncertain": []
+        };
+      }
     }
 
-    final bool isSafe = ingredientResults.isEmpty;
-
-    final String message = isSafe
-        ? "Safe for $religionId ($strictness rule). No rules violated."
-        : "Violates $religionId ($strictness rule). Detected: "
-        "${violatedRuleIds.map((id) {
-      return restrictionDefinitions[id]?.title ?? id;
-    }).join(", ")}";
+    final bool isSafe = !hasViolation;
 
     return {
       "result": {
+        "domain": "religion",
+        "engine": {
+          "type": "rule",
+          "source": "Rule Based Engine"
+        },
         "religion": {
           "id": religionId,
-          "strictness": strictness,
+          "strictness": strictness
         },
-        "ingredients": ingredientResults,
+        "ingredients": ingredientFindings,
+        "additives": additiveFindings,
         "status": isSafe ? "safe" : "unsafe",
         "isSafe": isSafe,
-        "message": message,
-        "source": "Rule Based Engine",
+        "confidence": "high",
+        "message": isSafe
+            ? "Safe for $religionId ($strictness rule). No violations detected."
+            : "Contains items not permissible for $religionId ($strictness rule)."
       }
     };
   }
+
+
+  String _normalize(String input) {
+    return input
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+
+  Set<String> tokenize(String text) {
+    return _normalize(text).split(' ').toSet();
+  }
+
+  bool matchesExample(String text, String example) {
+    final normalizedText = _normalize(text);
+    final normalizedExample = _normalize(example);
+
+    // Exact word-boundary match (no substrings)
+    final pattern = RegExp(
+      r'\b' + RegExp.escape(normalizedExample) + r'\b',
+    );
+
+    return pattern.hasMatch(normalizedText);
+  }
+
+
+
+
 }

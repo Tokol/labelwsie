@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:lottie/lottie.dart';
 
-import '../camera_scan_page.dart';
+import 'scan.dart';
 
 class LandingScreen extends StatefulWidget { // Make Stateful for animations
   const LandingScreen({Key? key}) : super(key: key);
@@ -239,7 +239,7 @@ class _LandingScreenState extends State<LandingScreen> with TickerProviderStateM
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CameraScanPage()),
+                    MaterialPageRoute(builder: (context) => const ScanPage()),
                   );
                 },
                 child: AnimatedContainer(

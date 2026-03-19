@@ -1,12 +1,12 @@
 const List<String> hinduBasic = [
-  "contains_beef",
+  "contains_beef_meat",
   "contains_blood_products",
   "contains_unspecified_meat",
 ];
 
 const List<String> hinduStandard = [
   // Basic rules
-  "contains_beef",
+  "contains_beef_meat",
   "contains_blood_products",
   "contains_unspecified_meat",
 
@@ -24,7 +24,7 @@ const List<String> hinduStandard = [
 
 const List<String> hinduStrict = [
   // Standard restrictions
-  "contains_beef",
+  "contains_beef_meat",
   "contains_blood_products",
   "contains_unspecified_meat",
   "contains_pork",

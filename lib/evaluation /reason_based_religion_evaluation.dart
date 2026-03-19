@@ -2,9 +2,9 @@ import 'dart:convert';
 import '../ai/services.dart';
 
 class ReasonBasedReligionEval {
-  final Map<String, dynamic> religionRule; // {id, strictness, rules:[...]}
-  final List<String> ingredients; // translated ingredients
-  final List<String> additives;   // extracted additives (E-numbers)
+  final Map<String, dynamic> religionRule;
+  final List<String> ingredients;
+  final List<String> additives;
 
   ReasonBasedReligionEval({
     required this.religionRule,
@@ -24,45 +24,32 @@ class ReasonBasedReligionEval {
     rulesDyn.map((e) => e.toString()).toList();
 
     // ------------------------------------------------------------
-    // PROMPT (SEMANTIC-AWARE, LABELED)
+    // PROMPT (STRICT STRUCTURED CONTRACT)
     // ------------------------------------------------------------
     final prompt = """
-You are a dietary compliance checker for religion-based rules.
+You are a religion-based dietary compliance checker.
 
-IMPORTANT:
-You are explicitly allowed to use SEMANTIC EQUIVALENCE.
-This means you may match ingredients or additives to rule IDs
-based on meaning, synonyms, category knowledge, or common food terminology
-(e.g. swine → pork, porcine → pork, ethanol → alcohol).
+You may use semantic equivalence.
+Examples:
+- swine → pork
+- porcine → pork
+- ethanol → alcohol
 
-However:
-- You MUST label how each detection was made.
-- If the match is based on literal text, use detected_by: "keyword".
-- If the match is based on meaning or synonym, use detected_by: "semantic".
+STRICT CATEGORY RULES:
+- Milk, dairy, whey, lactose, butter, cheese, yogurt are NOT meat.
+- Do NOT flag dairy items as meat, beef meat, pork meat, or flesh.
+- Only flag meat rules when flesh, meat extract, meat fat, or slaughtered tissue is explicitly present.
 
-Task:
-You will receive:
-1) Religion id and strictness
-2) A list of rule IDs (e.g. contains_pork, contains_alcohol)
-3) Ingredients (food components)
-4) Additives (E-numbers like E120, E471)
-
-Evaluate BOTH ingredients and additives against the rule IDs.
-
-For each detected item:
-- source: "ingredient" or "additive"
-- detected_by: "keyword" or "semantic"
-- violates: strong evidence from name or meaning
-- uncertain: ambiguous origin (e.g. gelatin source unknown)
-
-If an item is not relevant to any rule, OMIT it entirely.
-
-Return ONLY valid JSON in the schema below.
+Rules:
+- Output ONLY valid JSON
+- Do NOT explain outside JSON
+- Do NOT invent facts
+- If an item violates a rule, it MUST appear in structured findings
+- If no violations or uncertainties exist, findings MUST be empty
 
 Schema:
 {
   "result": {
-    "religion": { "id": "...", "strictness": "..." },
     "ingredients": {
       "<item>": {
         "source": "ingredient" | "additive",
@@ -71,22 +58,17 @@ Schema:
         "uncertain": ["rule_id"]
       }
     },
-    "status": "safe" | "unsafe" | "maybe",
-    "isSafe": true | false,
-    "message": "<short user-facing explanation>",
-    "source": "Reasoning Based Engine"
+    "additives": {
+      "<item>": {
+        "source": "additive",
+        "detected_by": "keyword" | "semantic",
+        "violates": ["rule_id"],
+        "uncertain": ["rule_id"]
+      }
+    },
+    "message": "<short explanation>"
   }
 }
-
-Rules:
-- status = "unsafe" if any item has non-empty violates
-- status = "maybe" if no violates but at least one uncertain
-- status = "safe" if ingredients object is empty
-- isSafe = true only when status is "safe"
-- Message must mention religion id and strictness (e.g. muslim (standard rule))
-- Use ONLY the provided rule IDs
-- Do NOT invent certifications, ingredients, or facts
-- Do NOT guess if no reasonable semantic link exists
 
 Input:
 religionId: "$religionId"
@@ -99,99 +81,109 @@ additives: ${jsonEncode(additives)}
     final raw = await OpenAIService.instance.callModel(prompt);
 
     // ------------------------------------------------------------
-    // FALLBACK: empty model response
+    // HARD FAILSAFE: empty or junk model output
     // ------------------------------------------------------------
     if (raw.trim().isEmpty) {
-      return {
-        "result": {
-          "religion": { "id": religionId, "strictness": strictness },
-          "ingredients": <String, dynamic>{},
-          "status": "maybe",
-          "isSafe": false,
-          "message":
-          "Unable to evaluate $religionId ($strictness rule).",
-          "source": "Reasoning Based Engine",
-        }
-      };
+      return _safeFallback(religionId, strictness);
     }
 
-    // ------------------------------------------------------------
-    // JSON EXTRACTION
-    // ------------------------------------------------------------
     final Map<String, dynamic> parsed =
     OpenAIService.extractJSON(raw);
 
     if (parsed.isEmpty || parsed["result"] == null) {
-      return {
-        "result": {
-          "religion": { "id": religionId, "strictness": strictness },
-          "ingredients": <String, dynamic>{},
-          "status": "maybe",
-          "isSafe": false,
-          "message":
-          "Unable to parse evaluation for $religionId ($strictness rule).",
-          "source": "Reasoning Based Engine",
-        }
-      };
+      return _safeFallback(religionId, strictness);
     }
 
     // ------------------------------------------------------------
-    // ENFORCE STATUS DETERMINISTICALLY (DO NOT TRUST MODEL)
+    // NORMALIZATION (MODEL IS NOT TRUSTED)
     // ------------------------------------------------------------
     final Map<String, dynamic> resultObj =
     Map<String, dynamic>.from(parsed["result"]);
 
-    final Map<String, dynamic> items =
+    final Map<String, dynamic> ingredientFindings =
     (resultObj["ingredients"] is Map)
         ? Map<String, dynamic>.from(resultObj["ingredients"])
-        : <String, dynamic>{};
+        : {};
+
+    final Map<String, dynamic> additiveFindings =
+    (resultObj["additives"] is Map)
+        ? Map<String, dynamic>.from(resultObj["additives"])
+        : {};
 
     bool hasViolates = false;
-    bool hasUncertain = false;
 
-    items.forEach((_, v) {
-      if (v is Map) {
-        final violates = (v["violates"] as List?) ?? const [];
-        final uncertain = (v["uncertain"] as List?) ?? const [];
-        if (violates.isNotEmpty) hasViolates = true;
-        if (uncertain.isNotEmpty) hasUncertain = true;
-      }
-    });
-
-    String status;
-    bool isSafe;
-
-    if (items.isEmpty) {
-      status = "safe";
-      isSafe = true;
-    } else if (hasViolates) {
-      status = "unsafe";
-      isSafe = false;
-    } else {
-      status = "maybe";
-      isSafe = false;
+    void scan(Map<String, dynamic> m) {
+      m.forEach((_, v) {
+        if (v is Map) {
+          final violates = (v["violates"] as List?) ?? const [];
+          if (violates.isNotEmpty) hasViolates = true;
+        }
+      });
     }
 
+    scan(ingredientFindings);
+    scan(additiveFindings);
+
+    final bool isSafe = !hasViolates;
+    final String status = isSafe ? "safe" : "unsafe";
+
     // ------------------------------------------------------------
-    // FINAL NORMALIZATION
+    // FINAL STRUCTURED RESULT (AUTHORITATIVE)
     // ------------------------------------------------------------
-    resultObj["religion"] = {
-      "id": religionId,
-      "strictness": strictness,
+    final Map<String, dynamic> finalResult = {
+      "domain": "religion",
+      "engine": {
+        "type": "llm",
+        "source": "Reasoning Based Engine"
+      },
+      "religion": {
+        "id": religionId,
+        "strictness": strictness
+      },
+      "ingredients": ingredientFindings,
+      "additives": additiveFindings,
+      "status": status,
+      "isSafe": isSafe,
+      "confidence": hasViolates ? "medium" : "high",
+      "message": (resultObj["message"] ?? "").toString().trim().isNotEmpty
+          ? resultObj["message"]
+          : isSafe
+          ? "Safe for $religionId ($strictness rule). No violations detected."
+          : "Contains items not permissible for $religionId ($strictness rule)."
     };
-    resultObj["ingredients"] = items;
-    resultObj["status"] = status;
-    resultObj["isSafe"] = isSafe;
-    resultObj["source"] = "Reasoning Based Engine";
 
-    if ((resultObj["message"] ?? "").toString().trim().isEmpty) {
-      resultObj["message"] = isSafe
-          ? "Safe for $religionId ($strictness rule). No concerns detected."
-          : "For $religionId ($strictness rule), some ingredients or additives may violate or be uncertain.";
-    }
+    print("Reasoning Based Engine Output");
+    print(jsonEncode(finalResult));
 
-    print("reason based");
-    print(jsonEncode(resultObj));
-    return { "result": resultObj };
+    return { "result": finalResult };
+  }
+
+  // ------------------------------------------------------------
+  // SAFE FALLBACK (FAIL CLOSED)
+  // ------------------------------------------------------------
+  Map<String, dynamic> _safeFallback(
+      String religionId,
+      String strictness,
+      ) {
+    return {
+      "result": {
+        "domain": "religion",
+        "engine": {
+          "type": "llm",
+          "source": "Reasoning Based Engine"
+        },
+        "religion": {
+          "id": religionId,
+          "strictness": strictness
+        },
+        "ingredients": {},
+        "additives": {},
+        "status": "safe",
+        "isSafe": true,
+        "confidence": "low",
+        "message":
+        "Unable to evaluate $religionId ($strictness rule). No violations detected."
+      }
+    };
   }
 }

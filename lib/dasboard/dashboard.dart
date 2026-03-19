@@ -1,28 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:label_wise/dasboard/profile.dart';
 import 'package:label_wise/dasboard/scan.dart';
-import 'package:label_wise/dasboard/testscan.dart';
 import 'package:lottie/lottie.dart';
-import 'package:not_static_icons/not_static_icons.dart';
 
 import 'home.dart';  // IMPORTANT import
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final int initialIndex;
+
+  const DashboardScreen({
+    super.key,
+    this.initialIndex = 0,
+  });
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
 
   final List<Widget> _pages = const [
     HomePage(),
-    //ScanPage(),
-    TestScreen(),
+    ScanPage(),
     ProfilePage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {

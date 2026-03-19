@@ -1,5 +1,6 @@
-import '../reason_based_religion_evaluation.dart';
 import '../rule_based_religion_evaluation.dart';
+import '../reason_based_religion_evaluation.dart';
+import 'llm_reasoning_schema_guard.dart';
 
 class ReligionEvaluation {
   final Map<String, dynamic> religionRule;
@@ -13,115 +14,103 @@ class ReligionEvaluation {
   });
 
   Future<Map<String, dynamic>> evaluate() async {
-    final religionId = (religionRule["id"] ?? "unknown").toString();
-    final strictness = (religionRule["strictness"] ?? "standard").toString();
-
-    // --------------------------------------------------
-    // 1️⃣ RULE BASED ENGINE (FIRST & FINAL IF HIT)
-    // --------------------------------------------------
+    // ==================================================
+    // 1️⃣ RULE-BASED ENGINE (AUTHORITATIVE GATE)
+    // ==================================================
     final ruleEval = RuleBasedReligionEval(
       religionRule: religionRule,
       ingredients: ingredients,
       additives: additives,
     );
 
-    final ruleOut = ruleEval.result();
-    final ruleResult = Map<String, dynamic>.from(ruleOut["result"] ?? {});
-    final ruleStatus = ruleResult["status"];
+    final Map<String, dynamic> ruleOut = ruleEval.result();
+    final Map<String, dynamic> ruleResult =
+    Map<String, dynamic>.from(ruleOut["result"]);
 
-    if (ruleStatus == "unsafe") {
-      return {
-        "result": {
-          "domain": "religion",
-          "engine": {
-            "type": "rule",
-            "sources": ["Rule Based Engine"]
-          },
-          "religion": {
-            "id": religionId,
-            "strictness": strictness
-          },
-          "status": "unsafe",
-          "isSafe": false,
-          "score": 100,
-          "confidence": "high",
-          "findings": ruleResult["ingredients"] ?? {},
-          "message": ruleResult["message"],
-          "explanation":
-          "Violation detected using deterministic rule matching."
-        }
-      };
+    // 🔒 HARD STOP: deterministic violation
+    if (ruleResult["status"] == "unsafe") {
+      return ruleOut;
     }
 
-    // --------------------------------------------------
-    // 2️⃣ REASONING ENGINE (LLM)
-    // --------------------------------------------------
+    // ==================================================
+    // 2️⃣ REASON-BASED ENGINE (SEMANTIC FALLBACK)
+    // ==================================================
     final llmEval = ReasonBasedReligionEval(
       religionRule: religionRule,
       ingredients: ingredients,
       additives: additives,
     );
 
-    final llmOut = await llmEval.result();
-    final llmResult = Map<String, dynamic>.from(llmOut["result"] ?? {});
+    Map<String, dynamic> llmOut;
 
-    // 🔑 IMPORTANT: collect BOTH ingredients + additives
-    final Map<String, dynamic> llmFindings = {
-      ...(llmResult["ingredients"] is Map
-          ? llmResult["ingredients"]
-          : {}),
-      ...(llmResult["additives"] is Map
-          ? llmResult["additives"]
-          : {}),
-    };
+    try {
+      llmOut = validateReasoningResult(
+        await llmEval.result(),
+      );
+    } catch (_) {
+      // ❌ LLM invalid / contradictory
+      // Fail closed → trust rule-based safe result
+      return ruleOut;
+    }
 
-    if (llmFindings.isNotEmpty) {
+    final Map<String, dynamic> llmResult =
+    Map<String, dynamic>.from(llmOut["result"]);
+
+    final Map<String, dynamic> llmIngredients =
+        (llmResult["ingredients"] as Map?)?.cast<String, dynamic>() ?? {};
+
+    final Map<String, dynamic> llmAdditives =
+        (llmResult["additives"] as Map?)?.cast<String, dynamic>() ?? {};
+
+    final bool llmHasFindings =
+        llmIngredients.isNotEmpty || llmAdditives.isNotEmpty;
+
+    // 🔎 Semantic violation found → return LLM result
+    if (llmHasFindings) {
       return {
         "result": {
           "domain": "religion",
           "engine": {
             "type": "llm",
-            "sources": ["Reasoning Based Engine"]
+            "source": "Reasoning Based Engine",
           },
-          "religion": {
-            "id": religionId,
-            "strictness": strictness
-          },
+          "religion": ruleResult["religion"],
+          "ingredients": llmIngredients,
+          "additives": llmAdditives,
           "status": "unsafe",
           "isSafe": false,
-          "score": 100,
           "confidence": "medium",
-          "findings": llmFindings,
-          "message": llmResult["message"],
-          "explanation":
-          "Violation detected using semantic reasoning."
+          "message": llmResult["message"] ??
+              "Contains items not permissible for "
+                  "${ruleResult["religion"]["id"]} "
+                  "(${ruleResult["religion"]["strictness"]} rule).",
         }
       };
     }
 
-    // --------------------------------------------------
-    // 3️⃣ BOTH ENGINES FOUND NOTHING
-    // --------------------------------------------------
+    // ==================================================
+    // 3️⃣ BOTH ENGINES PASSED (TRUE HYBRID SAFE)
+    // ==================================================
     return {
       "result": {
         "domain": "religion",
         "engine": {
           "type": "hybrid",
-          "sources": ["Rule Based Engine", "Reasoning Based Engine"]
+          "source": [
+            "Rule Based Engine",
+            "Reasoning Based Engine",
+          ],
         },
-        "religion": {
-          "id": religionId,
-          "strictness": strictness
-        },
+        "religion": ruleResult["religion"],
+        "ingredients": {},
+        "additives": {},
         "status": "safe",
         "isSafe": true,
-        "score": 100,
         "confidence": "high",
-        "findings": {},
         "message":
-        "Safe for $religionId ($strictness rule). No violations detected.",
-        "explanation":
-        "No violations found by rule-based or reasoning-based evaluation."
+        "Safe for ${ruleResult["religion"]["id"]} "
+            "(${ruleResult["religion"]["strictness"]} rule). "
+            "No violations detected.",
       }
     };
   }
