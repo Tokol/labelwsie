@@ -12,6 +12,8 @@ import 'services/food_analysis_processor.dart';
 import 'services/market_country_service.dart';
 import 'services/photo_extraction_service.dart';
 import 'services/photo_validation_service.dart';
+import 'widgets/photo_capture_intro_card.dart';
+import 'widgets/photo_capture_viewport.dart';
 
 class ProductPhotoPage extends StatefulWidget {
   final String barcode;
@@ -374,126 +376,15 @@ class _ProductPhotoPageState extends State<ProductPhotoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFDCE7DD)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Capture a clear food package photo",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF224D35),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Barcode: ${widget.barcode}",
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF6A7C6F),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    "Take a readable photo of a packaged food product or its ingredient label. We will validate the image first before extraction.",
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.45,
-                      color: Color(0xFF6A7C6F),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            PhotoCaptureIntroCard(barcode: widget.barcode),
             const SizedBox(height: 18),
             Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Container(
-                  width: double.infinity,
-                  color: const Color(0xFF101513),
-                  child: previewBytes != null
-                      ? Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.memory(
-                              previewBytes,
-                              fit: BoxFit.cover,
-                            ),
-                            if (_analyzing)
-                              Container(
-                                color: Colors.black.withOpacity(0.45),
-                                child: const Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      CircularProgressIndicator(
-                                        color: Colors.white,
-                                      ),
-                                      SizedBox(height: 14),
-                                      Text(
-                                        "Validating food package photo…",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                          ],
-                        )
-                      : FutureBuilder<void>(
-                          future: _cameraFuture,
-                          builder: (context, snapshot) {
-                            if (_error != null) {
-                              return Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Text(
-                                    _error!,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-
-                            final controller = _controller;
-                            if (snapshot.connectionState != ConnectionState.done ||
-                                controller == null ||
-                                !controller.value.isInitialized) {
-                              return const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              );
-                            }
-
-                            return Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                CameraPreview(controller),
-                                const _PhotoGuideOverlay(),
-                              ],
-                            );
-                          },
-                        ),
-                ),
+              child: PhotoCaptureViewport(
+                previewBytes: previewBytes,
+                analyzing: _analyzing,
+                error: _error,
+                cameraFuture: _cameraFuture,
+                controller: _controller,
               ),
             ),
             const SizedBox(height: 16),
@@ -573,54 +464,6 @@ class _ProductPhotoPageState extends State<ProductPhotoPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _PhotoGuideOverlay extends StatelessWidget {
-  const _PhotoGuideOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Stack(
-        children: [
-          Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              margin: const EdgeInsets.only(top: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.42),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: const Text(
-                "Fit the package or ingredient label inside the frame",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 52),
-              child: Container(
-                width: 250,
-                height: 330,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: const Color(0xFF8DE0A8),
-                    width: 3,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

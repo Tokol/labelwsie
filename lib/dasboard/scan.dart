@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'process_page.dart';
-import 'product_photo_page.dart';
-import '../utlis/open_food_service.dart';
 
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key});
@@ -56,43 +54,18 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
 
     setState(() {
       _hasScanned = true;
-      _statusText = "Checking product database…";
+      _statusText = "Barcode detected. Starting analysis…";
     });
 
     await controller.stop();
     if (!mounted) return;
 
-    Map<String, dynamic>? product;
-    try {
-      product = await OpenFoodFactsService.fetchProduct(code);
-    } catch (_) {
-      product = null;
-    }
-    if (!mounted) return;
-
-    if (product == null) {
-      final goToPhoto = await _showProductNotFoundSheet(code);
-      if (!mounted) return;
-      if (goToPhoto) {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProductPhotoPage(barcode: code),
-          ),
-        );
-      }
-    } else {
-      final resolvedProduct = Map<String, dynamic>.from(product);
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProcessPage(
-            barcode: code,
-            product: resolvedProduct,
-          ),
-        ),
-      );
-    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProcessPage(barcode: code),
+      ),
+    );
 
     if (!mounted) return;
     setState(() {
@@ -100,72 +73,6 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
       _statusText = "Align barcode inside the frame";
     });
     await controller.start();
-  }
-
-  Future<bool> _showProductNotFoundSheet(String barcode) async {
-    return await showModalBottomSheet<bool>(
-          context: context,
-          backgroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          builder: (sheetContext) {
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Product not found",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF224D35),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "We could not find barcode $barcode in the product database. You can continue by taking a photo of the product and ingredients.",
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.45,
-                        color: Color(0xFF6A7C6F),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(sheetContext, true),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2F7A4B),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: const Text("Take Photo Instead"),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(sheetContext, false),
-                        child: const Text("Scan Again"),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ) ??
-        false;
   }
 
   @override

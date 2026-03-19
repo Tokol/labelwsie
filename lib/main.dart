@@ -9,7 +9,6 @@ import 'profile_selection.dart';
 import 'splash_screen.dart';
 import 'dasboard/dashboard.dart';
 import 'state/pref_store.dart';
-import 'state/dashboard_controller.dart';
 import 'onboarding_screen.dart';
 
 Future<void> main() async {
@@ -23,7 +22,6 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => PreferenceStore()),
-        ChangeNotifierProvider(create: (_) => DashboardController()),
       ],
       child: const LabelWiseDemoApp(),
     ),
