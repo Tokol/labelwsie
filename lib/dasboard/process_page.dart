@@ -109,10 +109,20 @@ class _ProcessPageState extends State<ProcessPage> {
       final ingredients = extraction.ingredients;
       final additives = extraction.additives;
       final productAllergens = extraction.productAllergens;
+      final category = extraction.category;
+      final originCountry = extraction.originCountry;
       final nutriments = extraction.nutriments;
       final nutrientLevels = extraction.nutrientLevels;
       final nutriScore = extraction.nutriScore;
       final novaGroup = extraction.novaGroup;
+
+      if (category != null && category.isNotEmpty) {
+        product["categories"] = category;
+      }
+
+      if (originCountry != null && originCountry.isNotEmpty) {
+        product["origins"] = originCountry;
+      }
 
       if (ingredients == null || ingredients.isEmpty) {
         setState(() {

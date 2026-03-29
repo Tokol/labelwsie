@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:hive_ce/hive.dart';
+import 'services/installation_registration_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -37,6 +38,7 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _navigate() async {
     final box = await Hive.openBox("app_data");
     await _ensureInstallationId(box);
+    await _ensureInstallationRegistration(box);
 
     final hasSeenOnboarding = box.get("hasSeenOnboarding", defaultValue: false);
     final hasSetPreferences = box.get("hasSetPreferences", defaultValue: false);
@@ -72,6 +74,15 @@ class _SplashScreenState extends State<SplashScreen>
     final installationId = "lw_${timestamp}_$suffix";
 
     await box.put("installation_id", installationId);
+  }
+
+  Future<void> _ensureInstallationRegistration(Box box) async {
+    try {
+      await InstallationRegistrationService.ensureRegistered(box);
+    } catch (error, stackTrace) {
+      debugPrint("Installation registration failed: $error");
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 
   @override

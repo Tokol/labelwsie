@@ -167,9 +167,16 @@ class _PrefLifestyleScreenState extends State<PrefLifestyleScreen> {
   }
 
   int _getColumnCount(double width) {
-    if (width < 340) return 2;
-    if (width < 700) return 3;
+    if (width < 700) return 2;
+    if (width < 1100) return 3;
     return 4;
+  }
+
+  double _cardHeight(double width) {
+    if (width < 380) return 198;
+    if (width < 700) return 210;
+    if (width < 1100) return 196;
+    return 184;
   }
 
 
@@ -287,7 +294,7 @@ class _PrefLifestyleScreenState extends State<PrefLifestyleScreen> {
                     crossAxisCount: _getColumnCount(width),
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: 0.95,
+                    mainAxisExtent: _cardHeight(width),
                   ),
                   itemBuilder: (_, index) {
                     final goal = kLifestyleGoals[index];
@@ -383,40 +390,44 @@ class _PrefLifestyleScreenState extends State<PrefLifestyleScreen> {
 
             Text(
               goal.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              overflow: TextOverflow.fade,
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
+                height: 1.2,
               ),
             ),
 
             const SizedBox(height: 4),
 
-            Text(
-              goal.subtitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF777777),
-                height: 1.3,
+            Expanded(
+              child: Text(
+                goal.subtitle,
+                maxLines: 4,
+                overflow: TextOverflow.fade,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF777777),
+                  height: 1.3,
+                ),
               ),
             ),
-
-            const Spacer(),
+            const SizedBox(height: 8),
 
             Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
                   child: Text(
                     goal.type == LifestyleGoalType.restriction
                         ? 'Ingredient rules'
                         : 'Affects suggestions',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                    overflow: TextOverflow.fade,
                     style: const TextStyle(
                       fontSize: 10.5,
+                      height: 1.2,
                       color: Color(0xFF2E7D32),
                     ),
                   ),

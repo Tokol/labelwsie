@@ -249,6 +249,19 @@ class _PreferencesWizardScreenState extends State<PreferencesWizardScreen> {
     );
   }
 
+  void _cancelWizard() {
+    if (widget.fromProfile) {
+      Navigator.pop(context);
+      return;
+    }
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      "/home",
+      (route) => false,
+    );
+  }
+
   // ─────────────────────────────────────────────
   // SAVE EVERYTHING
   // ─────────────────────────────────────────────
@@ -424,7 +437,30 @@ class _PreferencesWizardScreenState extends State<PreferencesWizardScreen> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            if (currentIndex != 0)
+            OutlinedButton(
+              onPressed: _cancelWizard,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFBFD5C4)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
+                ),
+              ),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(
+                  color: Color(0xFF4F6A58),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+
+            if (currentIndex != 0) ...[
+              const SizedBox(width: 10),
               TextButton(
                 onPressed: _goBack,
                 child: const Text(
@@ -436,6 +472,7 @@ class _PreferencesWizardScreenState extends State<PreferencesWizardScreen> {
                   ),
                 ),
               ),
+            ],
 
             const Spacer(),
 

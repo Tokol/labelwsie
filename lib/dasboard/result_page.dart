@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io' show File;
+import 'package:hive_ce/hive.dart';
 import '../diet_pref/restriction_definitions.dart';
 import 'dashboard.dart';
 import 'services/alternative_suggestions_service.dart';
 import 'services/enjoy_suggestions_service.dart';
 import 'services/scan_history_service.dart';
+import '../services/training_payload_upload_service.dart';
 
 class ResultPage extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -524,6 +527,7 @@ class _ResultPageState extends State<ResultPage> {
 
   Widget _buildNutritionSection() {
     final rows = _nutritionRows();
+    final hasNutritionData = rows.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -573,94 +577,114 @@ class _ResultPageState extends State<ResultPage> {
                 ),
               ),
               const SizedBox(height: 14),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Table(
-                  columnWidths: const {
-                    0: FlexColumnWidth(1.4),
-                    1: FlexColumnWidth(1),
-                  },
-                  border: TableBorder.all(
-                    color: const Color(0xFFDDE8DF),
-                    width: 1,
-                  ),
-                  children: [
-                    const TableRow(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF4FAF5),
-                      ),
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                          child: Text(
-                            "Nutrient",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF2B5C3D),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                          child: Text(
-                            "Value",
-                            textAlign: TextAlign.right,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF2B5C3D),
-                            ),
-                          ),
-                        ),
-                      ],
+              if (hasNutritionData)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Table(
+                    columnWidths: const {
+                      0: FlexColumnWidth(1.4),
+                      1: FlexColumnWidth(1),
+                    },
+                    border: TableBorder.all(
+                      color: const Color(0xFFDDE8DF),
+                      width: 1,
                     ),
-                    for (final row in rows)
-                      TableRow(
+                    children: [
+                      const TableRow(
                         decoration: BoxDecoration(
-                          color: row.$3,
+                          color: Color(0xFFF4FAF5),
                         ),
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(
+                            padding: EdgeInsets.symmetric(
                               horizontal: 14,
-                              vertical: 13,
+                              vertical: 12,
                             ),
                             child: Text(
-                              row.$1,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF486252),
+                              "Nutrient",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF2B5C3D),
                               ),
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(
+                            padding: EdgeInsets.symmetric(
                               horizontal: 14,
-                              vertical: 13,
+                              vertical: 12,
                             ),
                             child: Text(
-                              row.$2,
+                              "Value",
                               textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 15,
+                              style: TextStyle(
+                                fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF224F35),
+                                color: Color(0xFF2B5C3D),
                               ),
                             ),
                           ),
                         ],
                       ),
-                  ],
+                      for (final row in rows)
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: row.$3,
+                          ),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 13,
+                              ),
+                              child: Text(
+                                row.$1,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF486252),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 13,
+                              ),
+                              child: Text(
+                                row.$2,
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF224F35),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FBF8),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFDDE8DF)),
+                  ),
+                  child: const Text(
+                    "Nutrition data is not available for this product.",
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.45,
+                      color: Color(0xFF6A7C6F),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
               if (widget.nutrientLevels.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 const Text(
@@ -3093,7 +3117,144 @@ class _ResultPageState extends State<ResultPage> {
     };
 
     await ScanHistoryService.upsertEntry(entry);
+    await _printTrainingPayload();
     _historySaved = true;
+  }
+
+  Future<void> _printTrainingPayload() async {
+    final box = await Hive.openBox("app_data");
+    final payload = _buildTrainingPayload(box);
+    debugPrint("TRAINING_PAYLOAD_START");
+    debugPrint(const JsonEncoder.withIndent("  ").convert(payload));
+    debugPrint("TRAINING_PAYLOAD_END");
+    try {
+      await TrainingPayloadUploadService.upload(
+        box: box,
+        payload: payload,
+      );
+    } catch (error, stackTrace) {
+      debugPrint("Training payload upload failed: $error");
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
+  Map<String, dynamic> _buildTrainingPayload(Box box) {
+    final overallStatus = _overallDecisionStatusLabel();
+    final overallLine = _overallDecisionLine();
+    final analysisConfidence = _overallAnalysisConfidencePercent();
+    final originCountry = _originCountry(widget.product);
+    final routeType = widget.product["image_source"]?.toString() == "local_capture"
+        ? "photo"
+        : "barcode";
+
+    final evaluationResults = <String, dynamic>{};
+    for (final domain in widget.ranEvaluations) {
+      if (domain == "allergy") continue;
+      final raw = widget.evaluationResults[domain];
+      if (raw is Map) {
+        evaluationResults[domain] = Map<String, dynamic>.from(raw);
+      }
+    }
+
+    return {
+      "schema_version": 1,
+      "installation_id": box.get("installation_id")?.toString(),
+      "created_at_epoch_ms": DateTime.now().millisecondsSinceEpoch,
+      "history_epoch_ms": _historyEpochMillis,
+      "client": {
+        "platform": _platformLabel(),
+        "route_type": routeType,
+        "app_surface": "result_page",
+      },
+      "input": {
+        "barcode": widget.product["code"]?.toString(),
+        "product_name_original": _productName(widget.product),
+        "brand_original": widget.product["brands"]?.toString().trim(),
+        "category_english": _category(widget.product),
+        "origin_country_english": originCountry,
+        "ingredients_english": widget.ingredients,
+        "additives_english": widget.additives,
+        "allergens_english": widget.allergens,
+        "nutriments": widget.nutriments,
+        "nutrient_levels": widget.nutrientLevels,
+        "nutri_score": widget.nutriScore,
+        "nova_group": widget.novaGroup,
+        "image_source": widget.product["image_source"]?.toString() ?? "api",
+      },
+      "preferences": {
+        "religion": _cloneMap(box.get("religion_pref")),
+        "ethical": _cloneList(box.get("ethical_pref")),
+        "medical": _cloneList(box.get("medical_pref")),
+        "lifestyle": _cloneMap(box.get("life_style_pref")),
+      },
+      "teacher_result": {
+        "overall_status": overallStatus,
+        "overall_line": overallLine,
+        "analysis_confidence_percent": analysisConfidence,
+        "header_summary": _buildStaticHeaderSummary(),
+        "ran_evaluations":
+            widget.ranEvaluations.where((domain) => domain != "allergy").toList(),
+        "domain_results": evaluationResults,
+        "tips": _tips,
+        "tips_confidence_percent": _tipsConfidencePercent,
+        "alternatives": _alternatives
+            .map(
+              (item) => {
+                "type": item.type,
+                "title": item.title,
+                "reason": item.reason,
+                "fit_tags": item.fitTags,
+                "local_examples": item.localExamples,
+              },
+            )
+            .toList(),
+        "alternatives_confidence_percent": _alternativesConfidencePercent,
+      },
+      "metadata": {
+        "is_history_entry": widget.isHistoryEntry,
+        "market_country": widget.userMarketCountry,
+        "market_country_source": widget.userMarketCountrySource,
+        "nutrition_available": widget.nutriments.isNotEmpty,
+        "origin_available": originCountry != null && originCountry.isNotEmpty,
+        "usable_for_training": true,
+        "excluded_domains": const ["allergy"],
+      },
+    };
+  }
+
+  String _platformLabel() {
+    if (kIsWeb) return "web";
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return "android";
+      case TargetPlatform.iOS:
+        return "ios";
+      case TargetPlatform.macOS:
+        return "macos";
+      case TargetPlatform.windows:
+        return "windows";
+      case TargetPlatform.linux:
+        return "linux";
+      case TargetPlatform.fuchsia:
+        return "fuchsia";
+    }
+  }
+
+  Map<String, dynamic>? _cloneMap(dynamic value) {
+    if (value is Map) {
+      return Map<String, dynamic>.from(value);
+    }
+    return null;
+  }
+
+  List<Map<String, dynamic>> _cloneList(dynamic value) {
+    if (value is List) {
+      return value
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+    }
+    return const [];
   }
 
   (Color, Color, Color, Color) _alternativeColors(String type) {
